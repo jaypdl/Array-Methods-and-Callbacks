@@ -78,31 +78,56 @@ console.log(wc2014Win());
     //use filter to search for finals - return if Stage is Final
 
 function getFinals(data) {
-    data.filter(function(game){
-        return 
+    return data.filter(function(game){
+        return game.Stage === "Final";
+    })
+}
+
+console.log(getFinals(fifaData));
+
+
+// function getFinals(data) {
+//     return data.filter((game) => game.Stage === "Final"); 
+// };
+
+
+/* Task 3: Implement a higher-order function called `getYears` that accepts the callback function `getFinals`, and returns an array called `years` containing all of the years in the dataset */
+    //Higher order function that accepts 'getFinals' as a callback
+    //Needs to output an array of years - Use map to log years
+
+
+function getYears(cb) {
+    return cb.map(game => game.Year);
+
+};
+
+const years = getYears(getFinals(fifaData));
+console.log(years);
+
+/* Task 4: Implement a higher-order function called `getWinners`, that accepts the callback function `getFinals()` and determine the winner (home or away) of each `finals` game. Return the name of all winning countries in an array called `winners` */  
+    //HOF needs to accept getFinals
+    //Determine winner - if statement
+        //Compare home team goals vs away - create if statenent to compare home and away
+    //create winners array -use map
+
+
+
+function getWinners(cb) {
+    return cb.map(game =>{
+        if (game["Home Team Goals"] > game["Away Team Goals"]){
+            return game["Home Team Name"];
+        } else if (game["Away Team Goals"] > game["Home Team Goals"]){
+            return game["Away Team Name"];
+        }else {
+            return "Tie";
+        }
     })
 
 };
 
-/* Task 3: Implement a higher-order function called `getYears` that accepts the callback function `getFinals`, and returns an array called `years` containing all of the years in the dataset */
+const winners = getWinners(getFinals(fifaData));
+console.log(winners);
 
-function getYears(/* code here */) {
-
-    /* code here */
-
-};
-
-getYears();
-
-/* Task 4: Implement a higher-order function called `getWinners`, that accepts the callback function `getFinals()` and determine the winner (home or away) of each `finals` game. Return the name of all winning countries in an array called `winners` */ 
-
-function getWinners(/* code here */) {
-
-    /* code here */
-
-};
-
-getWinners();
 
 /* Task 5: Implement a higher-order function called `getWinnersByYear` that accepts the following parameters and returns a set of strings "In {year}, {country} won the world cup!" 
 
@@ -110,22 +135,38 @@ Parameters:
  * callback function getWinners
  * callback function getYears
  */
+    //HOF that accepts 2 cbs
+    //loop through both functions - use foreach ?
+    //have it create a new string -use interpolation.
 
-function getWinnersByYear(/* code here */) {
+function getWinnersByYear(getW,getY) {
+    let str = "";
+    getY.forEach((year,ind) =>
+        str += `In ${year}, ${getW[ind]} won the world cup! \n`) ;
+    return str; 
 
 };
 
-getWinnersByYear();
+// console.log(getWinnersByYear(getWinners(getFinals(fifaData)),getYears(getFinals(fifaData))));
+
+console.log(getWinnersByYear(winners,years));
 
 /* Task 6: Write a function called `getAverageGoals` that accepts a parameter `data` and returns the the average number of home team goals and away team goals scored per match (Hint: use .reduce and do this in 2 steps) */
+    //HOF takes data
+    //Need to return average of home team and away per match.
+        // sum number of matches (array.length), use reduce on home goals and away goals.
+            //divide each by number of matches... return interpolated string?
 
-function getAverageGoals(/* code here */) {
-
-    /* code here */
+function getAverageGoals(data) {
+    let home = data.reduce((acc, item) =>{
+        return acc + item["Home Team Goals"]},0);
+    let away = data.reduce((acc,item) => {
+        return acc + item["Away Team Goals"]},0);
+    return `Average number of Home team goals per match is ${(home / data.length).toFixed(1)} goals.\nAverage number of Away team goals per match is ${(away / data.length).toFixed(1)} goals.\nAverage combined goals per match is ${((home+away) / data.length).toFixed(1)} goals.`;
 
 };
 
-getAverageGoals();
+console.log(getAverageGoals(fifaData));
 
 /// STRETCH 🥅 //
 
@@ -134,13 +175,31 @@ getAverageGoals();
 Hint: Investigate your data to find "team initials"!
 Hint: use `.reduce` */
 
-function getCountryWins(/* code here */) {
+    //HOF that takes data and initials
+    //Associate initials with home/away team goals
+    //need to filter final matches
+    //compare to see if itials team won the match
+    //How to use reduce? Would loop through each games played by initials, would compare to see if won, then would accumulate
 
-    /* code here */
 
+function getCountryWins(data, initials) {
+    return data.reduce(function(acc,match){
+        if (match["Home Team Initials"] === initials && match.Stage === "Final"){
+            if (match["Home Team Goals"] > match["Away Team Goals"]){
+                return ++acc;
+            } else {return acc + 0;}
+        } else if (match["Away Team Initials"] === initials && match.Stage === "Final"){
+            if (match["Away Team Goals"] > match["Home Team Goals"]){
+                return ++acc;
+            } else {return acc + 0;}
+        } else {return acc + 0;}
+    },0)
 };
 
-getCountryWins();
+console.log(getCountryWins(fifaData, "BRA"));
+
+
+
 
 
 /* Stretch 3: Write a function called getGoals() that accepts a parameter `data` and returns the team with the most goals score per appearance (average goals for) in the World Cup finals */
